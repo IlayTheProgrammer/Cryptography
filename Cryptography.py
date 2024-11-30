@@ -6,7 +6,6 @@ import numpy as np
 from PIL import Image
 from math import ceil, sqrt
 
-
 ENG_ALPHABET: tuple[str] = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
 ENG_ALPHABET_CASE: tuple[str] = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
 EXTENDED_ENG_ALPHABET: tuple[str] = (' ', '\n', '!', '?', '"', "'", ':', ';', ',', '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
@@ -325,11 +324,10 @@ class Image_Encipherer:
             filler: tuple[int] = (0,0,0)
 
         if pixel_zone == 1:
+            del result
+            del filler
 
-            for i in range(len(pixels)):
-                result[i] = pixels[i]
-
-            return result
+            return [pix for pix in pixels]
 
         it: int = 0
         matrix: dict[int:int] = dict()
@@ -596,17 +594,17 @@ class Caesar_Cipher:
         alphabet_copy: list[str] = list(dict.fromkeys(alphabet))
 
         #Shift of the alphabet
-        #==============================================
-        if shift < 0:
-            for _ in range(abs(shift) % len(alphabet)):
-                letter: str = alphabet_copy.pop(0)
-                alphabet_copy.append(letter)
+        #=======================================================================
+        if shift > 0:
+            alphabet_copy: list[str] = alphabet_copy[::-1]
 
-        elif shift > 0:
-            for _ in range(abs(shift) % len(alphabet)):
-                letter: str = alphabet_copy.pop(-1)
-                alphabet_copy.insert(0, letter)
-        #==============================================
+        letters_to_shift: list[str] = alphabet_copy[:(abs(shift)%len(alphabet))]
+        alphabet_copy: list[str] = alphabet_copy[(abs(shift)%len(alphabet)):]
+        alphabet_copy.extend(letters_to_shift)
+
+        if shift > 0:
+            alphabet_copy: list[str] = alphabet_copy[::-1]
+        #=======================================================================
 
         self.alphabet: dict[str:str] = dict(zip(list(dict.fromkeys(alphabet)), alphabet_copy))
 
@@ -647,7 +645,7 @@ class Caesar_Cipher:
         assert isinstance(maintain_special_symbols, bool), f"The 'maintain_special_symbols' parameter must be of type 'bool', not '{type(maintain_special_symbols)}'!"
         #=============================================================================================================================================================
 
-        #Allocation of the memory for the result
+        # #Allocation of the memory for the result
         #==============================================================================
         if not maintain_special_symbols:
             size: int = len([i for i in message if self.alphabet.get(i, None) != None])
@@ -697,20 +695,11 @@ class Caesar_Cipher:
         #Type check
         assert isinstance(message, str), f"The 'message' parameter must be of type 'str', not '{type(message)}'!"
 
-        result: list[str] = ['']*len(message)
-
         #Swap of keys and values
         swapped_alphabet: dict[str:str] = {j:i for i, j in self.alphabet.items()}
 
         #Decryption of the message
-        #==============================================================
-        for i, letter in enumerate(message):
-
-            if decrypted_letter := swapped_alphabet.get(letter, False):
-                result[i] = decrypted_letter
-            else:
-                result[i] = letter
-        #==============================================================
+        result: list[str] = [swapped_alphabet.get(letter, False) if swapped_alphabet.get(letter, False) else letter for letter in message]
 
         del swapped_alphabet
 
@@ -1636,3 +1625,4 @@ class Vigenere_Table:
             table.append('\n')
 
         return ' '.join(table)
+
